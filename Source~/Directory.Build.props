@@ -1,0 +1,9 @@
+<Project>
+  <!-- The brick builds against a Turian checkout beside the Bricks folder, as on a workstation and in brick CI. -->
+  <PropertyGroup>
+    <TurianDir Condition="'$(TurianDir)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)../../../Turian'))</TurianDir>
+    <SolutionDir>$(TurianDir)</SolutionDir>
+    <NoLocalPackages>true</NoLocalPackages>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>

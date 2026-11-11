@@ -1,0 +1,12 @@
+name: Verify brick
+on: {push: {branches: [main]}, pull_request: {}}
+permissions: {contents: read}
+jobs:
+  verify:
+    uses: MASS4ORG/brick-workflows/.github/workflows/verify.yml@v1
+    with:
+      # The assemblies build from this brick's own projects (one targets net11.0-android and the editor one embeds
+      # its runtime dependency list), which the generic precast compiler cannot do.
+      precast: false
+      twin: false
+      source-tests: Tests~/Turian.Android.Tests/Turian.Android.Tests.csproj

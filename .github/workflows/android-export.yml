@@ -1,0 +1,61 @@
+name: Android export
+# A new project installs this brick from its folder and exports for Android with Turian's pinned toolchain; the APK is
+# then checked for signature, identity and 16 KB alignment.
+on:
+  push: {branches: [main]}
+  pull_request: {}
+  workflow_dispatch:
+    inputs:
+      turian-ref:
+        description: Turian branch, tag or commit to export with
+        default: main
+permissions: {contents: read}
+jobs:
+  android-export:
+    runs-on: ubuntu-26.04
+    env:
+      DOTNET_INSTALL_DIR: ${{ github.workspace }}/.dotnet
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: Bricks/org.mass4.turian.android
+
+      - uses: actions/checkout@v7
+        with:
+          repository: MASS4ORG/Turian
+          ref: ${{ inputs.turian-ref || 'main' }}
+          path: Turian
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+          global-json-file: Turian/global.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install the Android toolchain
+        working-directory: Turian
+        run: bash ci/android-toolchain.sh
+
+      - name: Build the CLI and the brick
+        working-directory: Turian
+        run: |
+          dotnet build Turian/Editor/CLI/Turian.Editor.CLI.csproj -p:NoLocalPackages=true -m:4
+          dotnet build "../Bricks/org.mass4.turian.android/Source~/Turian.Editor.Build.Platform.Android" -m:4
+
+      - name: Export a new project for Android
+        working-directory: Turian
+        env:
+          TURIAN_DIR: ${{ github.workspace }}/Turian
+        run: bash "../Bricks/org.mass4.turian.android/Tools~/android-smoke.sh" "$RUNNER_TEMP/android-smoke"
+
+      - name: Upload the APK
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-smoke-apk
+          path: ${{ runner.temp }}/android-smoke/sample/Output/**/*-Signed.apk
+          retention-days: 7

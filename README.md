@@ -31,4 +31,4 @@ Development profiles package the Khronos Vulkan validation layer when the option
 
 ## Develop the brick
 
-The projects build against a Turian checkout beside the Bricks folder (`../../Turian`), or the one `TurianDir` names. `Tests~/Turian.Android.Tests` holds the tests; `Tools~/android-smoke.sh` exports a new project the way CI does, and `Tools~/android-native.cs` rebuilds the SDL natives in `Native~`.
+The projects build against a Turian checkout beside the Bricks folder (`../../Turian`), or the one `TurianDir` names. `Tests~/Turian.Android.Tests` holds the tests; `Tools~/android-smoke.sh` exports a new project the way CI does, `Tools~/android-lifecycle.sh` runs the lifecycle runbook, and `Tools~/android-native.cs` rebuilds the SDL natives in `Native~`.

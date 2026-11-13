@@ -1,0 +1,15 @@
+name: Release brick
+on: {push: {tags: ["v*"]}}
+permissions: {contents: read}
+jobs:
+  release:
+    uses: MASS4ORG/brick-workflows/.github/workflows/release.yml@v1
+    with:
+      # The assemblies build from this brick's own projects (one targets net11.0-android and the editor one embeds
+      # its runtime dependency list), which the generic precast compiler cannot do.
+      precast: false
+      twin: false
+      source-tests: Tests~/Turian.Android.Tests/Turian.Android.Tests.csproj
+    secrets:
+      BRICKS_SIGNING_KEY: ${{ secrets.BRICKS_SIGNING_KEY }}
+      BRICKS_STORE_ACCESS_TOKEN: ${{ secrets.BRICKS_STORE_ACCESS_TOKEN }}

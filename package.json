@@ -1,11 +1,14 @@
 {
   "id": "org.mass4.turian.android",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "displayName": "Android Platform",
   "description": "Android CoreCLR export, surface host and packaged content.",
   "author": "MASS4",
   "license": "MPL-2.0",
   "clientOnly": true,
+  "engines": {
+    "turian": ">=5.0"
+  },
   "dependencies": {
     "org.mass4.turian.vulkan": "builtin:org.mass4.turian.vulkan"
   },

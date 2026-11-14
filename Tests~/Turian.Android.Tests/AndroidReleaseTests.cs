@@ -119,12 +119,14 @@ public sealed class AndroidReleaseTests : IDisposable
     {
         Directory.CreateDirectory(Path.Combine(directory, "Assets"));
         var imagePath = Path.Combine(directory, "Assets", "logo.png");
-        using (var image = new SKBitmap(300, 150))
+        var image = new RasterImage(300, 150);
+        for (var i = 0; i < image.Pixels.Length; i += 4)
         {
-            image.Erase(SKColors.OrangeRed);
-            using var data = SKImage.FromBitmap(image).Encode(SKEncodedImageFormat.Png, 100);
-            File.WriteAllBytes(imagePath, data.ToArray());
+            // OrangeRed, opaque, in BGRA order.
+            (image.Pixels[i], image.Pixels[i + 1], image.Pixels[i + 2], image.Pixels[i + 3]) = (0x00, 0x45, 0xFF, 0xFF);
         }
+
+        PngEncoder.Save(imagePath, image);
 
         var texture = new TextureAsset { Id = Guid.NewGuid(), RelativePath = "Assets/logo.png" };
         Serializer.Save<Asset>($"{imagePath}.meta", texture);
@@ -145,10 +147,18 @@ public sealed class AndroidReleaseTests : IDisposable
 
         foreach (var (density, icon, foreground) in AndroidIcons.Densities)
         {
-            using var legacy = SKBitmap.Decode(Path.Combine(export, "Resources", $"mipmap-{density}", "appicon.png"));
-            using var adaptive = SKBitmap.Decode(Path.Combine(export, "Resources", $"mipmap-{density}", "appicon_foreground.png"));
+            var legacy = RasterImage.Load(Path.Combine(export, "Resources", $"mipmap-{density}", "appicon.png"));
+            var adaptive = RasterImage.Load(Path.Combine(export, "Resources", $"mipmap-{density}", "appicon_foreground.png"));
+            Assert.NotNull(legacy);
+            Assert.NotNull(adaptive);
             Assert.Equal((icon, icon), (legacy.Width, legacy.Height));
             Assert.Equal((foreground, foreground), (adaptive.Width, adaptive.Height));
+
+            // The fitted 2:1 icon fills the middle two thirds horizontally; the launcher mask's margin stays clear.
+            var inner = foreground * 2 / 3;
+            var margin = (foreground - inner) / 2;
+            Assert.Equal(0, adaptive.Pixels[((((foreground / 2) * foreground) + margin - 1) * 4) + 3]);
+            Assert.Equal(0xFF, adaptive.Pixels[((((foreground / 2) * foreground) + margin + 1) * 4) + 3]);
         }
 
         Assert.Contains("@mipmap/appicon_foreground", File.ReadAllText(Path.Combine(export, "Resources", "mipmap-anydpi-v26", "appicon.xml")));

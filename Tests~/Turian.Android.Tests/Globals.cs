@@ -10,7 +10,6 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Logging.Abstractions;
 global using NSubstitute;
 global using Silk.NET.Vulkan;
-global using SkiaSharp;
 global using Turian.Editor.Core;
 global using Turian.Engine.Core;
 global using Xunit;

@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using SkiaSharp;
 using Turian.Engine.Core;
 
 namespace Turian.Editor.Core;
@@ -39,7 +38,7 @@ public static class AndroidIcons
             return false;
         }
 
-        using var image = SKBitmap.Decode(File.ReadAllBytes(source))
+        var image = ProjectIcon.Decode(source)
             ?? throw new InvalidDataException($"The project icon '{source}' is not a readable image.");
         foreach (var (density, icon, foreground) in Densities)
         {
@@ -54,20 +53,19 @@ public static class AndroidIcons
     }
 
     /// <summary>Centers the image in the middle two thirds of the canvas, the part no launcher mask can cut off.</summary>
-    static byte[] EncodeForeground(SKBitmap image, int size)
+    static byte[] EncodeForeground(RasterImage image, int size)
     {
         var inner = size * 2 / 3;
-        using var surface = SKSurface.Create(new SKImageInfo(size, size, SKColorType.Rgba8888, SKAlphaType.Premul));
-        surface.Canvas.Clear(SKColors.Transparent);
-        using (var fitted = SKImage.FromEncodedData(ProjectIcon.EncodePng(image, inner)))
+        var fitted = image.FitSquare(inner);
+        var canvas = new RasterImage(size, size);
+        var offset = (size - inner) / 2;
+        for (var y = 0; y < inner; y++)
         {
-            var offset = (size - inner) / 2f;
-            surface.Canvas.DrawImage(fitted, SKRect.Create(offset, offset, inner, inner), new SKSamplingOptions(SKFilterMode.Nearest));
+            fitted.Pixels.AsSpan(y * inner * 4, inner * 4)
+                .CopyTo(canvas.Pixels.AsSpan((((offset + y) * size) + offset) * 4));
         }
 
-        using var snapshot = surface.Snapshot();
-        using var data = snapshot.Encode(SKEncodedImageFormat.Png, 100);
-        return data.ToArray();
+        return PngEncoder.Encode(canvas);
     }
 
     static void WriteAdaptiveIcon(string resources)

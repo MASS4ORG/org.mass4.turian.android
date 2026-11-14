@@ -254,4 +254,29 @@ public sealed class AndroidBuildPlatformTests : IDisposable
         }
         Assert.Throws<InvalidDataException>(() => AndroidPackageValidator.Validate(apk));
     }
+
+    /// <summary>
+    /// The Android export references the game project, which references the engine's desktop runtime packages, so
+    /// no package Android pins may be older than the engine's: NuGet rejects that as a downgrade (NU1605).
+    /// </summary>
+    [Fact]
+    public void RuntimePackagesAreNotOlderThanTheEngines()
+    {
+        RuntimeDependencies desktop;
+        using (var stream = typeof(RuntimeDependencies).Assembly.GetManifestResourceStream("Turian.RuntimeDependencies"))
+        using (var reader = new StreamReader(stream!))
+        {
+            desktop = RuntimeDependencies.Parse(reader);
+        }
+
+        var engine = desktop.Packages.ToDictionary(static p => p.Item1, static p => p.Item2, StringComparer.OrdinalIgnoreCase);
+        var older = new AndroidBuildPlatform().Dependencies.Packages
+            .Where(p => engine.TryGetValue(p.Item1, out var version)
+                && NuGet.Versioning.NuGetVersion.Parse(p.Item2) < NuGet.Versioning.NuGetVersion.Parse(version))
+            .Select(p => $"{p.Item1} {p.Item2} < {engine[p.Item1]}")
+            .ToArray();
+
+        Assert.Contains(desktop.Packages, static p => p.Item1 == "Microsoft.Extensions.Hosting");
+        Assert.Empty(older);
+    }
 }

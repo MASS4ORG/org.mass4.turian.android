@@ -190,6 +190,17 @@ public sealed class AndroidToolchainTests : IDisposable
         Assert.Null(AndroidToolchain.ParsePid(""));
     }
 
+    /// <summary>The platform's public diagnostic path rejects an SDK with folders but no required components.</summary>
+    [Fact]
+    public void PlatformToolchainRejectsAnIncompleteConfiguredSdk()
+    {
+        using var tools = AndroidFakeTools.Use(root);
+        var result = new AndroidBuildPlatform().CheckToolchain();
+
+        Assert.False(result.IsReady);
+        Assert.False(string.IsNullOrWhiteSpace(result.Message));
+    }
+
     /// <summary>The Android build is told where the tools are, so it does not depend on how the editor started.</summary>
     [Fact]
     public void PublishingNamesTheFoundTools()

@@ -39,10 +39,12 @@ wait_unlocked() {
 }
 
 original_rotation=$(remote settings get system accelerometer_rotation | tr -d '\r')
+original_user_rotation=$(remote settings get system user_rotation | tr -d '\r')
+original_always_finish=$(remote settings get global always_finish_activities | tr -d '\r')
 restore() {
   remote settings put system accelerometer_rotation "${original_rotation:-1}" >/dev/null
-  remote settings put system user_rotation 0 >/dev/null
-  remote settings put global always_finish_activities 0 >/dev/null
+  if [ "$original_user_rotation" = null ]; then remote settings delete system user_rotation >/dev/null; else remote settings put system user_rotation "$original_user_rotation" >/dev/null; fi
+  if [ "$original_always_finish" = null ]; then remote settings delete global always_finish_activities >/dev/null; else remote settings put global always_finish_activities "$original_always_finish" >/dev/null; fi
 }
 trap restore EXIT
 

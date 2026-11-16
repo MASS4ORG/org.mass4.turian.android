@@ -274,30 +274,8 @@ public sealed partial class AndroidBuildPlatform : IBuildPlatform
     const string MissingJdk = "No JDK 17 or newer was found: install one, or set its folder in Settings, Build, Android.";
 
     /// <inheritdoc />
-    public BuildPlatformStatus CheckToolchain()
-    {
-        try
-        {
-            var dotnet = DotnetLocator.Find(requiredSdkMajor: 11);
-            var packs = Path.Combine(Path.GetDirectoryName(dotnet)!, "packs");
-            var installed = Directory.Exists(packs)
-                && Directory.EnumerateDirectories(packs, "Microsoft.Android.Sdk.*")
-                    .Any(static pack => Directory.EnumerateDirectories(pack)
-                        .Any(static version => Path.GetFileName(version).StartsWith("37.", StringComparison.Ordinal)));
-            if (!installed)
-            {
-                return new(false, "Install the .NET 11 Android workload: dotnet workload install android.");
-            }
-
-            return MissingTools() is { } missing
-                ? new(false, missing)
-                : new(true, $"Android SDK at {Sdk}, JDK at {Jdk}.");
-        }
-        catch (InvalidOperationException exception)
-        {
-            return new(false, exception.Message);
-        }
-    }
+    public BuildPlatformStatus CheckToolchain() =>
+        AndroidToolchainQualification.Check(Sdk, Jdk, SdkVersion!);
 
     /// <inheritdoc />
     public string? ValidateSettings(IAppSettings settings) =>

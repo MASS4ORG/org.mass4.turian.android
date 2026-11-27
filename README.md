@@ -23,9 +23,11 @@ Then add a build profile whose platform is Android, and set Player Settings → 
 
 - `turian export <project> --profile Android` builds the APK under `Output/Android/<game>`.
 - `turian export … --install [--device <serial>]` also installs it on a connected device and starts it.
-- `turian deploy <project> --profile Android [--device <serial>]` exports, installs, starts the game and shows its log until it exits; Ctrl+C stops it.
+- `turian deploy <project> --profile Android [--device <serial>]` builds a temporary Development player, installs it, starts the game and shows its log until it exits; Ctrl+C stops it. The saved profile is unchanged. Add `--release` to deploy the authored profile with its release signing requirements.
 - `turian devices <project>` lists the devices ready to install on.
-- In Studio, Build & Run with an Android profile exports, installs and starts the game; Settings → Build → Android → Install on Device does the same after every Android export.
+- In Studio, switch to the Android profile for the main Build & Run command, or use Build & Run on the selected Android profile in Build Profiles. Both build a temporary Development player and install it. Settings → Build → Android → Install on Device installs ordinary exports using the authored profile.
+
+Local Development builds use the automatically managed debug keystore; no KeystorePath or KeyAlias is needed. Release exports require a keystore path and key alias in Android Player Settings, plus TURIAN_ANDROID_KEYSTORE_PASSWORD in the environment. The editor checks signing and toolchain requirements before compilation, restore and asset import. CLI logging defaults to Information; use `--verbosity Debug` for detailed diagnostics.
 
 Development profiles package the Khronos Vulkan validation layer when the optional `org.mass4.turian.android.validation.arm64` or `.x64` brick is installed.
 

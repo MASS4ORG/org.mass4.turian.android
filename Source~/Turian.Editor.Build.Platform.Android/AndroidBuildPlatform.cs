@@ -284,6 +284,10 @@ public sealed partial class AndroidBuildPlatform : IBuildPlatform
             ? null : "Set Player Settings ApplicationIdentifier to a valid Android application id (for example org.example.app) and use a positive Android version code.";
 
     /// <inheritdoc />
+    public string? ValidateExport(BuildPlatformContext context) =>
+        ValidateSettings(context.Settings) ?? ReleaseSigningProblem(context);
+
+    /// <inheritdoc />
     public Task PrepareAsync(BuildPlatformContext context, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

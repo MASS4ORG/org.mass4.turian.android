@@ -1,0 +1,19 @@
+name: Prepare brick release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Preview the next tag without committing or publishing
+        type: boolean
+        default: false
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  prepare:
+    uses: MASS4ORG/brick-workflows/.github/workflows/prepare-release.yml@v1
+    with:
+      dry-run: ${{ inputs.dry-run }}
